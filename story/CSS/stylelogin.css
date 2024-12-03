@@ -1,0 +1,171 @@
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    height: 100vh;
+    background: linear-gradient(to right, #084c4f 50%, rgb(209, 209, 209) 50%);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.container {
+    display: flex;
+    width: 80%;
+    max-width: 1000px;
+    background-color: #ffffff;
+    border-radius: 10px;
+    overflow: hidden;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    position: relative; /* Pastikan container berada di layer yang benar */
+}
+
+.logo {
+    width: 150px;
+    margin-bottom: 20px;
+}
+
+h1 {
+    font-size: 2rem;
+    color: #000;
+    margin-bottom: 20px;
+}
+
+p {
+    font-size: 1rem;
+    color: #333;
+    text-align: center;
+}
+
+label {
+    font-size: 0.9rem;
+    color: #333;
+    margin-bottom: 5px;
+    width: 100%;
+}
+
+input {
+    width: 100%;
+    max-width: 360px;
+    padding: 10px;
+    margin-bottom: 20px;
+    border: none;
+    border-radius: 5px;
+    background-color: #d9d9d9;
+    color: #333;
+    font-size: 1rem;
+    position: relative; /* Tambahkan relative positioning */
+    z-index: 1; /* Pastikan input berada di atas */
+}
+
+button {
+    width: 100%;
+    max-width: 360px;
+    padding: 10px;
+    border: none;
+    border-radius: 5px;
+    background-color: #054a4b;
+    color: #ffffff;
+    font-size: 1rem;
+    cursor: pointer;
+    position: relative; /* Posisi relatif */
+    z-index: 1; /* Pastikan tombol tidak tertutup elemen lain */
+}
+
+button:hover {
+    background-color: #033d3e;
+}
+
+.signup-form,
+.login-form,
+.forgot-password-form {
+    width: 50%;
+    padding: 40px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    color: #333;
+    position: relative; /* Pastikan form di atas elemen lain */
+}
+
+.signup-link,
+.login-link,
+.forgot-password-link {
+    font-size: 0.9rem;
+    color: #0a5b5c;
+    text-decoration: none;
+    position: relative; /* Pastikan link berada di layer atas */
+    z-index: 2; /* Link berada di lapisan yang lebih tinggi */
+}
+
+.signup-link:hover,
+.forgot-password-link:hover {
+    text-decoration: underline;
+}
+
+.google-login {
+    width: 85%;
+    padding: 10px;
+    margin-bottom: 20px;
+    border: 1px solid #333;
+    border-radius: 5px;
+    background-color: #ffffff;
+    color: #333;
+    font-size: 1rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    z-index: 1; /* Pastikan button berada di atas */
+}
+
+.google-icon {
+    width: 20px;
+    margin-right: 8px;
+}
+
+.or-divider {
+    font-size: 0.9rem;
+    color: #777;
+    margin: 20px 0;
+}
+
+.password-container {
+    position: relative;
+    width: 100%;
+}
+
+.password-container input {
+    width: 100%;
+}
+
+.toggle-password {
+    position: absolute;
+    right: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    cursor: pointer;
+}
+
+.form-links {
+    display: flex;
+    justify-content: space-between;
+    width: 100%;
+    margin-bottom: 20px;
+}
+
+.illustration {
+    width: 50%;
+    background-color: #d1e9e9;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative; /* Pastikan gambar di bawah elemen yang interaktif */
+}

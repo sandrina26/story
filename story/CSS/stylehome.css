@@ -1,0 +1,56 @@
+.navbar-brand img {
+    height: 50px;
+}
+
+.navbar .nav-link.active {
+    font-weight: bold;
+    color: #007bff;
+    text-decoration: underline;
+}
+
+.nav-link:hover, .nav-link:focus {
+    color: #0056b3;
+    text-decoration: none; 
+}
+
+.card-img-top {
+    height: 200px;
+    object-fit: cover;
+}
+
+.card-body {
+    text-align: center;
+}
+
+.card-title {
+    font-size: 1rem;
+    font-weight: bold;
+}
+
+.card-text {
+    font-size: 0.9rem;
+    color: #555;
+}
+
+.card {
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    border: none;
+}
+
+/* Styling for Category buttons with images */
+.btn-group .btn {
+    padding: 10px;
+    text-align: center;
+}
+
+.category-icon {
+    width: 40px;
+    height: 40px;
+    object-fit: cover;
+    margin-bottom: 8px;
+}
+
+.carousel-item img {
+    height: 400px;
+    object-fit: cover;
+}
