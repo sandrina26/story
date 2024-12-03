@@ -91,7 +91,7 @@ $role = $_SESSION['role'];
     </nav>
 
     <div class="container my-4">
-        <!-- Select All Checkbox -->
+        <!-- Select All Checkbox 1-->
         <div class="select-all-container">
             <input type="checkbox" id="select-all"> <strong>Select All</strong>
         </div>
