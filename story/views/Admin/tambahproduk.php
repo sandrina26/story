@@ -1,16 +1,9 @@
 <?php
-// Koneksi ke database
-$servername = "localhost";
-$username = "root";
-$password = "";
-$dbname = "db_story";
+include '../../database/configdb.php';
+session_start(); // Pastikan session dimulai
 
-$conn = new mysqli($servername, $username, $password, $dbname);
-
-// Cek koneksi
-if ($conn->connect_error) {
-    die("Koneksi gagal: " . $conn->connect_error);
-}
+// Ambil id_user dari session
+$id_user = $_SESSION['id_user'];  // Misalnya, id_user disimpan di session saat login
 
 // Menambahkan produk baru
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -20,36 +13,45 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $deskripsi = $_POST['deskripsi'];
     $stok = $_POST['stok'];
     
+    // Validasi harga
+    if ($harga < 0) {
+        echo "<script>alert('Harga tidak boleh negatif.');</script>";
+        exit(); // Hentikan proses jika harga negatif
+    }
+    
     // Handle gambar upload
     $foto = $_FILES['foto'];
-    $foto_name = $foto['name'];
-    $foto_tmp = $foto['tmp_name'];
-    $foto_size = $foto['size'];
-    $foto_error = $foto['error'];
+    $foto_name = $_FILES['foto']['name'];  // Ambil nama asli file
+    $foto_tmp = $_FILES['foto']['tmp_name'];  // Path sementara file
+    $foto_size = $_FILES['foto']['size'];  // Ukuran file
+    $foto_error = $_FILES['foto']['error'];  // Error upload file
     
-    // Tentukan direktori penyimpanan (folder images)
+    // Tentukan folder upload
     $upload_dir = $_SERVER['DOCUMENT_ROOT'] . '/story1/story/views/Admin/images/'; // Path ke folder images
-
-    // Cek apakah folder images ada, jika belum buat
-    if (!file_exists($upload_dir)) {
-        mkdir($upload_dir, 0777, true);  // Membuat folder jika belum ada
-    }
-
-    $foto_ext = strtolower(pathinfo($foto_name, PATHINFO_EXTENSION));
-    $foto_new_name = uniqid('', true) . '.' . $foto_ext;
-    $foto_path = $upload_dir . $foto_new_name;
-
-    // Cek apakah gambar valid
+    $foto_ext = strtolower(pathinfo($foto_name, PATHINFO_EXTENSION));  // Ambil ekstensi file (misal: jpg, png)
+    
+    // Cek ekstensi file apakah valid
     $valid_extensions = array("jpg", "jpeg", "png", "gif");
 
     if (in_array($foto_ext, $valid_extensions) && $foto_size < 5000000 && $foto_error === 0) {
-        // Pindahkan gambar ke direktori
+        // Tentukan path file baru
+        $foto_path = $upload_dir . $foto_name;  // Menyimpan dengan nama asli file
+
+        // Cek apakah file sudah ada, jika ada beri nama baru dengan menambahkan angka di belakang
+        $i = 1;
+        while (file_exists($foto_path)) {
+            $foto_name = pathinfo($foto_name, PATHINFO_FILENAME) . "($i)." . $foto_ext;
+            $foto_path = $upload_dir . $foto_name;
+            $i++;
+        }
+
+        // Pindahkan file gambar ke folder upload
         if (move_uploaded_file($foto_tmp, $foto_path)) {
-            // Simpan data produk ke database
-            $sql = "INSERT INTO produk (nama_produk, kategori, harga, deskripsi, stok, foto, username) 
-                    VALUES (?, ?, ?, ?, ?, ?, 'admin')";
+            // Simpan nama file gambar ke database
+            $sql = "INSERT INTO produk (nama_produk, kategori, harga, deskripsi, stok, foto, id_user) 
+                    VALUES (?, ?, ?, ?, ?, ?, ?)";
             $stmt = $conn->prepare($sql);
-            $stmt->bind_param("ssdssi", $nama_produk, $kategori, $harga, $deskripsi, $stok, $foto_new_name);
+            $stmt->bind_param("ssdsssi", $nama_produk, $kategori, $harga, $deskripsi, $stok, $foto_name, $id_user);    
 
             if ($stmt->execute()) {
                 echo "<script>alert('Produk berhasil ditambahkan!'); window.location.href = 'index.php';</script>";
@@ -64,6 +66,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 }
 ?>
+
 
 <!DOCTYPE html>
 <html lang="en">
@@ -83,11 +86,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             </div>
             <div class="mb-3">
                 <label for="kategori" class="form-label">Kategori</label>
-                <input type="text" class="form-control" id="kategori" name="kategori" required>
+                <select class="form-control" id="kategori" name="kategori" required>
+                    <option value="women">Women</option>
+                    <option value="men">Men</option>
+                    <option value="kids">Kids</option>
+                    <option value="couple">Couple</option>
+                    <option value="group">Group</option>
+                </select>
             </div>
             <div class="mb-3">
                 <label for="harga" class="form-label">Harga</label>
-                <input type="number" class="form-control" id="harga" name="harga" required>
+                <input type="number" class="form-control" id="harga" name="harga" min=0 required>
             </div>
             <div class="mb-3">
                 <label for="deskripsi" class="form-label">Deskripsi</label>

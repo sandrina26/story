@@ -65,18 +65,18 @@ if (!$result) {
                 <?php while ($row = $result->fetch_assoc()): ?>
                     <div class="product-item d-flex justify-content-between align-items-center mb-3">
                         <div class="d-flex align-items-center">
-                        <?php 
-                        // Mengambil data gambar dari database
-                        $base64Image = $row['foto']; // Data Base64 langsung dari database
+                            <?php 
+                            // Menampilkan gambar dari path (bukan Base64)
+                            $imagePath = $row['foto']; // Pastikan kolom foto berisi nama file gambar saja (misal: adatlampung.jpg)
 
-                        if (!empty($base64Image)) {
-                            // Tampilkan gambar dengan format Base64
-                            echo '<img src="' . htmlspecialchars($base64Image) . '" alt="Product" class="img-fluid">';
-                        } else {
-                            // Tampilkan gambar placeholder jika tidak ada gambar
-                            echo '<img src="../../images/default-placeholder.png" alt="Produk Tanpa Gambar" class="img-fluid">';
-                        }
-                        ?>
+                            if (!empty($imagePath)) {
+                                // Menampilkan gambar menggunakan path yang benar
+                                echo '<img src="../../images/' . htmlspecialchars($imagePath) . '" alt="Product" class="img-fluid">';
+                            } else {
+                                // Menampilkan gambar placeholder jika tidak ada gambar
+                                echo '<img src="../../images/adatbali.jpg" alt="Produk Tanpa Gambar" class="img-fluid">';
+                            }
+                            ?>
                             <div class="ms-3">
                                 <h5 class="mb-1"><?php echo htmlspecialchars($row['nama_produk'] ?? 'Produk Tanpa Nama'); ?></h5>
                                 <p class="mb-0 text-muted">

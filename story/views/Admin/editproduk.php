@@ -1,16 +1,5 @@
 <?php
-// Koneksi ke database
-$servername = "localhost";
-$username = "root";
-$password = "";
-$dbname = "db_story";
-
-$conn = new mysqli($servername, $username, $password, $dbname);
-
-// Cek koneksi
-if ($conn->connect_error) {
-    die("Koneksi gagal: " . $conn->connect_error);
-}
+include '../../database/configdb.php';
 
 // Cek apakah ada data yang dikirim melalui form
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -88,8 +77,13 @@ $data = $result->fetch_assoc();
 
             <div class="mb-3">
                 <label for="kategori" class="form-label">Kategori</label>
-                <input type="text" class="form-control" id="kategori" name="kategori" 
-                       value="<?php echo htmlspecialchars($data['kategori']); ?>" required>
+                <select class="form-control" id="kategori" name="kategori" required>
+                    <option value="women" <?php echo ($data['kategori'] == 'women') ? 'selected' : ''; ?>>Women</option>
+                    <option value="men" <?php echo ($data['kategori'] == 'men') ? 'selected' : ''; ?>>Men</option>
+                    <option value="kids" <?php echo ($data['kategori'] == 'kids') ? 'selected' : ''; ?>>Kids</option>
+                    <option value="couple" <?php echo ($data['kategori'] == 'couple') ? 'selected' : ''; ?>>Couple</option>
+                    <option value="group" <?php echo ($data['kategori'] == 'group') ? 'selected' : ''; ?>>Group</option>
+                </select>
             </div>
 
             <div class="mb-3">

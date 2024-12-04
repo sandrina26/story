@@ -1,15 +1,27 @@
 <?php
-// Memulai sesi
 session_start();
 
-// Memeriksa apakah pengguna sudah login
 if (!isset($_SESSION['username'])) {
-    // Jika belum login, arahkan ke halaman login
-    header("Location: login.php?redirect=homeuser.php"); // Mengirimkan halaman yang dituju setelah login
+    header("Location: login.php?redirect=homeuser.php");
     exit();
 }
-$username = $_SESSION['username'];
-$role = $_SESSION['role'];
+
+// Mengambil username dari session jika ada
+$username = isset($_SESSION['username']) ? $_SESSION['username'] : ''; 
+
+include '../../database/configdb.php'; // Koneksi database
+
+$sql = "SELECT * FROM produk";
+$result = $conn->query($sql);
+
+if (!$result) {
+    die("Query gagal: " . $conn->error);
+}
+
+// echo '<pre>';
+// print_r($row['foto']);
+// echo '</pre>';
+
 ?>
 
 <!DOCTYPE html>
@@ -82,68 +94,33 @@ $role = $_SESSION['role'];
             </div>
         </div>
 
-        <!-- Recommendation Section -->
-        <div class="col-md-12 text-center">
-            <h3 class="mb-4">Recommendation</h3>
-            <div class="row justify-content-center">
+        <div class="container mt-5">
+        <h2>Our Products</h2>
+        <div class="row">
+            <?php while ($row = $result->fetch_assoc()): ?>
                 <div class="col-md-3 mb-4">
-                    <div class="card h-100">
-                        <a href="detailproduk.php">
-                            <img src="../../images/adatlampung.jpg" class="card-img-top" alt="Women's wedding dress Lampung">
-                        </a>
+                    <div class="card">
+                    <?php 
+                            // Menampilkan gambar dari path yang disimpan di database
+                            if (!empty($row['foto'])) {
+                                $imagePath = '../../images/' . htmlspecialchars($row['foto']); // Gabungkan dengan folder images
+                                echo '<img src="' . $imagePath . '" class="card-img-top" alt="' . htmlspecialchars($row['nama_produk']) . '">';
+                            } else {
+                                // Jika path gambar kosong, tampilkan placeholder default
+                                echo '<img src="../../images/default-placeholder.png" class="card-img-top" alt="Produk Tanpa Gambar">';
+                            }
+                        ?>
                         <div class="card-body">
-                            <h5 class="card-title">Women's wedding dress Lampung customs</h5>
-                            <p class="card-text">IDR 300.000 / Day</p>
-                            <form method="POST" action="add_to_cart.php">
-                                <input type="hidden" name="product_id" value="1">
-                                <button class="btn btn-primary" type="submit">+ Add</button>
+                            <h5 class="card-title"><?php echo htmlspecialchars($row['nama_produk']); ?></h5>
+                            <p class="card-text">IDR <?php echo number_format($row['harga'], 0, ',', '.'); ?></p>
+                            <form method="POST" action="add_to_cart.php"> 
+                                <input type="hidden" name="id_produk" value="<?php echo $row['id_produk']; ?>">
+                                <button type="submit" class="btn btn-primary">+ Add to Cart</button>
                             </form>
                         </div>
                     </div>
                 </div>
-                <div class="col-md-3 mb-4">
-                    <div class="card h-100">
-                            <img src="../../images/adatbali.jpg" class="card-img-top" alt="Couple's wedding dress Balinese">
-                        </a>
-                        <div class="card-body">
-                            <h5 class="card-title">Couple's wedding dress Balinese customs</h5>
-                            <p class="card-text">IDR 800.000 / Day</p>
-                            <form method="POST" action="add_to_cart.php">
-                                <input type="hidden" name="product_id" value="1">
-                                <button class="btn btn-primary" type="submit">+ Add</button>
-                            </form>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md-3 mb-4">
-                    <div class="card h-100">
-                            <img src="../../images/adatsunda.jpg" class="card-img-top" alt="Women's wedding dress Sundanese">
-                        </a>
-                        <div class="card-body">
-                            <h5 class="card-title">Women's wedding dress Sundanese customs</h5>
-                            <p class="card-text">IDR 250.000 / Day</p>
-                            <form method="POST" action="add_to_cart.php">
-                                <input type="hidden" name="product_id" value="1">
-                                <button class="btn btn-primary" type="submit">+ Add</button>
-                            </form>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md-3 mb-4">
-                    <div class="card h-100">
-                            <img src="../../images/adatdayakkids.jpg" class="card-img-top" alt="Girls' clothes Dayak">
-                        </a>
-                        <div class="card-body">
-                            <h5 class="card-title">Girls' clothes Dayak customs</h5>
-                            <p class="card-text">IDR 350.000 / Day</p>
-                            <form method="POST" action="add_to_cart.php">
-                                <input type="hidden" name="product_id" value="1">
-                                <button class="btn btn-primary" type="submit">+ Add</button>
-                            </form>
-                        </div>
-                    </div>
-                </div>
-            </div>
+            <?php endwhile; ?>
         </div>
     </div>
     <footer class="bg-dark text-white p-2 mt-4">

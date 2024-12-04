@@ -1,9 +1,28 @@
 <?php
-// Memulai sesi
-session_start();
+// Mulai sesi
+if (session_status() === PHP_SESSION_NONE) {
+    session_start(); // Mulai sesi jika belum dimulai
+}
 
-$username = $_SESSION['username'];
-$role = $_SESSION['role'];
+// Pastikan id_user ada dalam sesi
+$id_user = $_SESSION['id_user'] ?? null;
+
+if (!$id_user) {
+    die("User ID is not set in session.");
+}
+
+// Koneksi database
+include '../../database/configdb.php';
+
+// Ambil data pesanan
+$sql = "SELECT k.id AS id_order, p.nama_produk, p.harga, k.tanggal_sewa, k.tanggal_kembali, k.durasi_sewa, p.foto 
+        FROM keranjang k 
+        JOIN produk p ON k.id_produk = p.id_produk 
+        WHERE k.id_user = ?";
+$stmt = $conn->prepare($sql);
+$stmt->bind_param("i", $id_user);
+$stmt->execute();
+$result = $stmt->get_result();
 ?>
 
 <!DOCTYPE html>
@@ -11,46 +30,55 @@ $role = $_SESSION['role'];
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Order Page</title>
+    <title>My Orders</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.10.0/font/bootstrap-icons.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="stylehome.css">
+    <link rel="stylesheet" href="../../CSS/stylehome.css?ver=1.0">
     <style>
-        body {
-            font-family: Arial, sans-serif;
+        .product-item img {
+            width: 100px;
+            height: 100px;
+            object-fit: cover;
+            border-radius: 5px;
         }
 
-        .nav-tabs .nav-link.active {
-            background-color: #f8f9fa;
-            border-color: #dee2e6 #dee2e6 #fff;
-            color: #495057;
+        .product-item {
+            border: 1px solid #e0e0e0;
+            border-radius: 10px;
+            padding: 15px;
+            display: flex;
+            align-items: center;
+        }
+
+        .product-item input[type="checkbox"] {
+            margin-right: 15px; /* Menambahkan jarak antara checkbox dan gambar */
         }
 
         .card {
-            border: 1px solid #dee2e6;
-            border-radius: 8px;
+            border: 1px solid #e0e0e0;
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 20px;
         }
 
-        .card img {
-            max-height: 120px;
-            object-fit: cover;
+        .card-body {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
         }
 
-        .text-success {
-            font-size: 0.9rem;
-        }
-
-        .badge {
-            font-size: 0.8rem;
-            border-radius: 0.3rem;
-        }
-
-        .text-end h5 {
+        .card-title {
+            font-size: 1.25rem;
             font-weight: bold;
         }
 
-        button {
-            margin-right: 5px;
+        .card-text {
+            font-size: 0.9rem;
+            color: #6c757d;
+        }
+
+        .btn-group form {
+            margin-left: 10px; /* Memberikan jarak ke kiri tombol */
         }
 
         .select-all-container {
@@ -60,45 +88,58 @@ $role = $_SESSION['role'];
         .modal-body {
             font-size: 0.9rem;
         }
+
+        .badge {
+            font-size: 0.8rem;
+            border-radius: 0.3rem;
+        }
+
+        .select-all-container input {
+            margin-right: 10px;
+        }
+
+        /* Style untuk tombol checkout dan edit/delete */
+        .checkout-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 20px;
+        }
+
+        .total-price-container {
+            font-weight: bold;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 10px;
+        }
+
+        .btn-group form {
+            margin-left: 0; /* Menghilangkan margin kiri untuk tombol edit dan delete */
+        }
+
+        /* Penataan tombol edit dan delete agar sejajar dengan checkout */
+        .product-item .action-buttons {
+            margin-left: auto; /* Memastikan tombol berada di sebelah kanan */
+        }
+
+        .checkout-container .action-buttons {
+            margin-left: 20px; /* Memberikan jarak antara total harga dan tombol */
+        }
     </style>
 </head>
 <body>
-    <nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm">
-        <div class="container">
-            <a class="navbar-brand" href="#">
-                <img src="images/logo.png" alt="Story Logo">
-            </a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-            <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-                    <li class="nav-item"><a class="nav-link" href="home.html">Home</a></li>
-                    <li class="nav-item"><a class="nav-link" href="wishlist.html">Wishlist</a></li>
-                    <li class="nav-item"><a class="nav-link" href="sale.html">Sale</a></li>
-                    <li class="nav-item"><a class="nav-link active" href="myorder.html">My Order</a></li>
-                    <li class="nav-item"><a class="nav-link" href="style.html">Style</a></li>
-                    <li class="nav-item"><a class="nav-link" href="shop.html">Shop</a></li>
-                </ul>
-                <form class="d-flex">
-                    <input class="form-control me-2" type="search" placeholder="Search entire store here...">
-                    <button class="btn btn-outline-success" type="submit">Search</button>
-                </form>
-                <a href="profil.html" class="btn btn-outline-secondary ms-2"><i class="bi bi-person"></i></a>
-                <a href="chat.html" class="btn btn-outline-secondary ms-2"><i class="bi bi-chat-dots"></i></a>
-            </div>
-        </div>
-    </nav>
+    <?php include '../components/navUser.php'; ?>
 
     <div class="container my-4">
-        <!-- Select All Checkbox 1-->
         <div class="select-all-container">
             <input type="checkbox" id="select-all"> <strong>Select All</strong>
         </div>
 
         <ul class="nav nav-tabs">
             <li class="nav-item">
-                <a class="nav-link active" href="#">My Order</a>
+                <a class="nav-link active" href="#">My Orders</a>
             </li>
             <li class="nav-item">
                 <a class="nav-link" href="#">Packed</a>
@@ -114,265 +155,139 @@ $role = $_SESSION['role'];
             </li>
         </ul>
 
-        <div class="my-4">
-            <!-- First Item -->
-            <div class="card mb-3 p-3 product-card">
-                <div class="row align-items-center">
-                    <div class="col-md-1 text-center">
-                        <input type="checkbox" class="form-check-input product-checkbox" data-id="1" data-name="Women's wedding dress Lampung customs" data-price="300000" />
-                    </div>
-                    <div class="col-md-2 position-relative">
-                        <span class="badge bg-light text-dark position-absolute top-0 start-0 px-2 py-1">Butik Indah</span>
-                        <img src="images/adatlampung.jpg" class="img-fluid rounded mt-3" alt="Lampung Wedding Dress">
-                    </div>
-                    <div class="col-md-6">
-                        <h5>Women's wedding dress Lampung customs</h5>
-                        <p class="text-muted">IDR 300.000 / Day + 20% (deposit)</p>
-                        <p class="text-success">Stock 48 | All Size</p>
-                        <div class="d-flex align-items-center">
-                            <input type="number" class="form-control w-auto me-2" value="3" min="1">
-                            <input type="number" class="form-control w-auto" value="1" min="1">
+        <h3 class="my-4">My Orders</h3>
+
+        <div class="product-list">
+            <?php $total_harga_selected = 0; // Variabel untuk total harga produk yang dipilih ?>
+            <?php while ($row = $result->fetch_assoc()): ?>
+                <div class="product-item mb-3">
+                    <!-- Checkbox ditempatkan sebelum gambar -->
+                    <input type="checkbox" class="order-checkbox" data-price="<?php echo $row['harga']; ?>" data-duration="<?php echo $row['durasi_sewa']; ?>" data-order-id="<?php echo $row['id_order']; ?>">
+
+                    <div class="d-flex align-items-center">
+                        <?php 
+                        // Menampilkan gambar produk
+                        $imagePath = $row['foto'];
+                        if (!empty($imagePath)) {
+                            echo '<img src="../../images/' . htmlspecialchars($imagePath) . '" alt="Product" class="img-fluid">';
+                        } else {
+                            echo '<img src="../../images/adatbali.jpg" alt="Produk Tanpa Gambar" class="img-fluid">';
+                        }
+                        ?>
+                        <div class="ms-3">
+                            <h5 class="mb-1"><?php echo htmlspecialchars($row['nama_produk']); ?></h5>
+                            <p class="mb-0 text-muted">
+                                Harga: IDR <?php echo number_format($row['harga'], 0, ',', '.'); ?> / Hari
+                            </p>
+                            <p class="mb-0 text-muted">Tanggal Sewa: <?php echo $row['tanggal_sewa']; ?></p>
+                            <p class="mb-0 text-muted">
+                                Tanggal Kembali: <?php echo isset($row['tanggal_kembali']) ? htmlspecialchars($row['tanggal_kembali']) : '-'; ?>
+                            </p>
+                            <p class="mb-0 text-muted">
+                                Durasi Sewa: <?php 
+                                    $durasi_sewa = isset($row['durasi_sewa']) && $row['durasi_sewa'] > 0 
+                                        ? htmlspecialchars($row['durasi_sewa']) . ' Hari' 
+                                        : 'Belum ditentukan';
+                                    echo $durasi_sewa;
+                                ?>
+                            </p>
                         </div>
                     </div>
-                    <div class="col-md-3 text-end">
-                        <h5>IDR 300.000</h5>
-                        <button class="btn btn-outline-secondary btn-sm">Edit</button>
-                        <button class="btn btn-outline-danger btn-sm">Delete</button>
+
+                    <div class="action-buttons">
+                        <form method="GET" action="editorder.php">
+                            <input type="hidden" name="order_id" value="<?php echo htmlspecialchars($row['id_order']); ?>">
+                            <button type="submit" class="btn btn-secondary">Edit</button>
+                        </form>
+                        <form method="POST" action="deleteorder.php">
+                            <input type="hidden" name="order_id" value="<?php echo htmlspecialchars($row['id_order']); ?>">
+                            <button type="submit" class="btn btn-danger">Delete</button>
+                        </form>
                     </div>
                 </div>
-            </div>
 
-            <!-- Second Item -->
-            <div class="card mb-3 p-3 product-card">
-                <div class="row align-items-center">
-                    <div class="col-md-1 text-center">
-                        <input type="checkbox" class="form-check-input product-checkbox" data-id="2" data-name="Women's wedding dress Sundanese customs" data-price="648000" />
+                <?php 
+                    // Menghitung harga total dari produk yang dipilih
+                    if (isset($_POST['select_product']) && in_array($row['id_order'], $_POST['selected_products'])) {
+                        $total_harga_selected += $row['harga'] * $row['durasi_sewa'];
+                    }
+                ?>
+
+            <?php endwhile; ?>
+        </div>
+
+        <div class="checkout-container">
+            <!-- Total harga dan tombol checkout di sebelah kanan -->
+            <div class="total-price-container">
+                <h4>Total Harga Produk yang Dipilih: IDR <span id="total-harga"><?php echo number_format($total_harga_selected, 0, ',', '.'); ?></span></h4>
+            </div>
+            <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#checkoutModal">Checkout</button>
+        </div>
+
+        <!-- Modal Checkout -->
+        <div class="modal fade" id="checkoutModal" tabindex="-1" aria-labelledby="checkoutModalLabel" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="checkoutModalLabel">Checkout</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                     </div>
-                    <div class="col-md-2 position-relative">
-                        <span class="badge bg-light text-dark position-absolute top-0 start-0 px-2 py-1">Wedding Dress</span>
-                        <img src="images/adatsunda.jpg" class="img-fluid rounded mt-3" alt="Padang Wedding Dress">
+                    <div class="modal-body">
+                        <p>Anda yakin ingin melanjutkan ke checkout dengan total harga berikut?</p>
+                        <h4>Total Harga: IDR <span id="modal-total-harga"><?php echo number_format($total_harga_selected, 0, ',', '.'); ?></span></h4>
                     </div>
-                    <div class="col-md-6">
-                        <h5>Women's wedding dress Sundanese customs</h5>
-                        <p class="text-muted">IDR 270.000 / Day + 20% (deposit)</p>
-                        <p class="text-success">Stock 10 | All Size</p>
-                        <div class="d-flex align-items-center">
-                            <input type="number" class="form-control w-auto me-2" value="2" min="1">
-                            <input type="number" class="form-control w-auto" value="1" min="1">
-                        </div>
-                    </div>
-                    <div class="col-md-3 text-end">
-                        <h5>IDR 648.000</h5>
-                        <button class="btn btn-outline-secondary btn-sm">Edit</button>
-                        <button class="btn btn-outline-danger btn-sm">Delete</button>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                        <a href="checkout.php" class="btn btn-primary">Lanjutkan</a>
                     </div>
                 </div>
             </div>
         </div>
 
-        <!-- Total and Checkout -->
-        <div class="d-flex justify-content-between align-items-center mt-3">
-            <div>
-                <strong>Total: </strong>
-                <span id="total-price">IDR 0</span>
-            </div>
-            <button id="checkout-btn" class="btn btn-primary" disabled>Checkout</button>
-        </div>
-    </div>
+        <script>
+            const selectAllCheckbox = document.getElementById('select-all');
+            const orderCheckboxes = document.querySelectorAll('.order-checkbox');
+            const totalHargaElement = document.getElementById('total-harga');
+            const modalTotalHarga = document.getElementById('modal-total-harga');
 
-    <!-- Modal Checkout -->
-    <div class="modal fade" id="checkoutModal" tabindex="-1" aria-labelledby="checkoutModalLabel" aria-hidden="true">
-        <div class="modal-dialog modal-lg">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="checkoutModalLabel">Checkout Details</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                    <div id="modal-product-details">
-                        <!-- Product details will be added dynamically -->
-                    </div>
-                    <hr>
-                    <div class="mt-4">
-                        <p><strong>Delivery:</strong> 19 Juni 2024</p>
-                        <p><strong>Address:</strong> Diana Sarah (+62) 823-4687-28<br>Dago, Kab. Bandung, Jawa Barat, ID 40723</p>
-                    </div>
-                    <div class="mt-3">
-                        <label for="voucher-code" class="form-label">Voucher Diskon (40%)</label>
-                    </div>
-                    <div class="mt-4">
-                        <h5>Payment Method</h5>
-                        <div class="form-check">
-                            <input class="form-check-input" type="radio" name="paymentMethod" id="payment-method2" value="virtual-account">
-                            <label class="form-check-label" for="payment-method2">Virtual Account</label>
-                        </div>
+            selectAllCheckbox.addEventListener('change', function() {
+                const isChecked = selectAllCheckbox.checked;
+                let totalHarga = 0;
 
-                        <!-- Dropdown untuk memilih bank -->
-                        <div id="virtual-account-container" class="mt-3" style="display:none;">
-                            <label for="payment-bank" class="form-label">Select Bank</label>
-                            <select class="form-select" id="payment-bank">
-                                <option value="mandiri">Bank Mandiri</option>
-                                <option value="bri">Bank BRI</option>
-                                <option value="bca">Bank BCA</option>
-                                <option value="bni">Bank BNI</option>
-                                <option value="cimb">CIMB Niaga</option>
-                                <option value="btn">Bank BTN</option>
-                            </select>
-                            <p id="virtual-account-number" class="mt-2"></p>
-                        </div>
-                    </div>                   
-                    <hr>
-                    <div class="d-flex justify-content-between">
-                        <div>Subtotal</div>
-                        <div id="subtotal">IDR 0</div>
-                    </div>
-                    <div class="d-flex justify-content-between">
-                        <div>Deposit</div>
-                        <div id="deposit">IDR 150.000</div>
-                    </div>
-                    <div class="d-flex justify-content-between">
-                        <div>Diskon 40% <span style="color: red;"></span></div>
-                        <div id="discount" class="text-danger">-IDR 0</div>
-                    </div>                                      
-                    <hr>
-                    <div class="d-flex justify-content-between">
-                        <div><strong>Total Pembayaran</strong></div>
-                        <div id="total-payment">IDR 0</div>
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                    <button type="button" class="btn btn-primary">Pay</button>
-                </div>
-            </div>
-        </div>
+                orderCheckboxes.forEach(function(checkbox) {
+                    checkbox.checked = isChecked;
+
+                    // Hitung total harga produk yang dipilih
+                    if (isChecked) {
+                        totalHarga += parseInt(checkbox.getAttribute('data-price')) * parseInt(checkbox.getAttribute('data-duration'));
+                    }
+                });
+
+                totalHargaElement.innerText = new Intl.NumberFormat().format(totalHarga);
+                modalTotalHarga.innerText = new Intl.NumberFormat().format(totalHarga);
+            });
+
+            orderCheckboxes.forEach(function(checkbox) {
+                checkbox.addEventListener('change', function() {
+                    let totalHarga = 0;
+                    let selectedCount = 0;
+
+                    orderCheckboxes.forEach(function(checkbox) {
+                        if (checkbox.checked) {
+                            totalHarga += parseInt(checkbox.getAttribute('data-price')) * parseInt(checkbox.getAttribute('data-duration'));
+                            selectedCount++;
+                        }
+                    });
+
+                    // Perbarui total harga dan toggle checkbox "Select All"
+                    totalHargaElement.innerText = new Intl.NumberFormat().format(totalHarga);
+                    modalTotalHarga.innerText = new Intl.NumberFormat().format(totalHarga);
+                    selectAllCheckbox.checked = selectedCount === orderCheckboxes.length;
+                });
+            });
+        </script>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script>
-        // JavaScript to handle calculations and updates
-        document.addEventListener('DOMContentLoaded', function () {
-            const checkboxes = document.querySelectorAll('.product-checkbox');
-            const selectAllCheckbox = document.getElementById('select-all');
-            const checkoutBtn = document.getElementById('checkout-btn');
-            const modalProductDetails = document.getElementById('modal-product-details');
-
-            // Handle select all checkbox
-            selectAllCheckbox.addEventListener('change', () => {
-                checkboxes.forEach(checkbox => {
-                    checkbox.checked = selectAllCheckbox.checked;
-                });
-                calculateTotal();
-            });
-
-            // Handle individual product checkboxes
-            checkboxes.forEach(checkbox => {
-                checkbox.addEventListener('change', calculateTotal);
-            });
-
-            // Handle checkout button click
-            checkoutBtn.addEventListener('click', () => {
-                const modal = new bootstrap.Modal(document.getElementById('checkoutModal'));
-                modal.show();
-            });
-
-            // Function to calculate total
-            function calculateTotal() {
-                let total = 0;
-                const selectedItems = [];
-                checkboxes.forEach(checkbox => {
-                    if (checkbox.checked) {
-                        const price = parseInt(checkbox.getAttribute('data-price'));
-                        const quantity = parseInt(checkbox.closest('.product-card').querySelector('input[type="number"]').value);
-                        const subtotalForItem = price * quantity;
-                        selectedItems.push({
-                            name: checkbox.getAttribute('data-name'),
-                            price: price,
-                            subtotal: subtotalForItem
-                        });
-                        total += subtotalForItem;
-                    }
-                });
-
-                // Diskon 40%
-                const discount = total * 0.40;
-                const deposit = 150000; // Deposit tetap
-                const totalPayment = total + deposit - discount;
-
-                // Update total harga di halaman
-                document.getElementById('total-price').textContent = `IDR ${total.toLocaleString()}`;
-
-                // Update modal checkout
-                modalProductDetails.innerHTML = '';
-                selectedItems.forEach(item => {
-                    const div = document.createElement('div');
-                    div.innerHTML = `<p>${item.name}: IDR ${item.subtotal.toLocaleString()}</p>`;
-                    modalProductDetails.appendChild(div);
-                });
-
-                // Update subtotal, deposit, diskon, dan total pembayaran
-                document.getElementById('subtotal').textContent = `IDR ${total.toLocaleString()}`;
-                document.getElementById('deposit').textContent = `IDR ${deposit.toLocaleString()}`;
-                document.getElementById('discount').textContent = `IDR -${discount.toLocaleString()}`;
-                document.getElementById('total-payment').textContent = `IDR ${totalPayment.toLocaleString()}`;
-
-                // Enable or disable checkout button
-                checkoutBtn.disabled = total === 0;
-            }
-        });
-        document.addEventListener('DOMContentLoaded', function () {
-            const paymentMethodRadios = document.querySelectorAll('input[name="paymentMethod"]');
-            const virtualAccountContainer = document.getElementById('virtual-account-container');
-            const paymentBankSelect = document.getElementById('payment-bank');
-            const virtualAccountNumberElement = document.getElementById('virtual-account-number');
-
-            // Fungsi untuk memperbarui nomor virtual account berdasarkan bank yang dipilih
-            function updateVirtualAccountNumber() {
-                const selectedBank = paymentBankSelect.value;
-                let virtualAccountNumber = '';
-
-                switch (selectedBank) {
-                    case 'mandiri':
-                        virtualAccountNumber = '700123456789';
-                        break;
-                    case 'bri':
-                        virtualAccountNumber = '100987654321';
-                        break;
-                    case 'bca':
-                        virtualAccountNumber = '100112233445';
-                        break;
-                    case 'bni':
-                        virtualAccountNumber = '200556677889';
-                        break;
-                    case 'cimb':
-                        virtualAccountNumber = '300665544332';
-                        break;
-                    case 'btn':
-                        virtualAccountNumber = '400998877665';
-                        break;
-                    default:
-                        virtualAccountNumber = '';
-                }
-
-                // Update nomor virtual account
-                virtualAccountNumberElement.textContent = `Virtual Account Number: ${virtualAccountNumber}`;
-            }
-
-            // Menangani perubahan metode pembayaran
-            paymentMethodRadios.forEach(radio => {
-                radio.addEventListener('change', function () {
-                    if (this.value === 'virtual-account') {
-                        virtualAccountContainer.style.display = 'block';  // Tampilkan dropdown bank
-                        updateVirtualAccountNumber(); // Perbarui nomor virtual account
-                    } else {
-                        virtualAccountContainer.style.display = 'none';  // Sembunyikan dropdown bank jika bukan virtual account
-                    }
-                });
-            });
-
-            // Menangani perubahan pilihan bank
-            paymentBankSelect.addEventListener('change', updateVirtualAccountNumber);
-        });
-    </script>
 </body>
 </html>

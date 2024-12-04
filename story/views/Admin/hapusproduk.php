@@ -1,16 +1,5 @@
 <?php
-// Koneksi ke database
-$servername = "localhost";
-$username = "root";
-$password = "";
-$dbname = "db_story";
-
-$conn = new mysqli($servername, $username, $password, $dbname);
-
-// Cek koneksi
-if ($conn->connect_error) {
-    die("Koneksi gagal: " . $conn->connect_error);
-}
+include '../../database/configdb.php';
 
 // Ambil ID produk dari URL
 $id_produk = isset($_GET['id']) ? intval($_GET['id']) : 0;

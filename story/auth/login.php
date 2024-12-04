@@ -23,8 +23,9 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         if (md5($password) === $user['password']) {
             // Menyimpan session login
             session_start();
-            $_SESSION['username'] = $user['username']; // Menggunakan 'username'
-            $_SESSION['role'] = $user['role']; // Jika ada kolom 'role' untuk menentukan apakah admin atau user biasa
+            $_SESSION['id_user'] = $user['id_user']; // Menggunakan 'id' untuk mengetahui pengguna
+            $_SESSION['username'] = $user['username']; // Menggunakan username
+            $_SESSION['role'] = $user['role']; // Jika ada kolom 'role'
 
             // Redirect berdasarkan peran user
             if ($user['role'] == 'admin') {
