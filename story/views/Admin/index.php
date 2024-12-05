@@ -66,7 +66,7 @@ if (!$result) {
                     <div class="product-item d-flex justify-content-between align-items-center mb-3">
                         <div class="d-flex align-items-center">
                             <?php 
-                            // Menampilkan gambar dari path (bukan Base64)
+                            // Menampilkan gambar dari path
                             $imagePath = $row['foto']; // Pastikan kolom foto berisi nama file gambar saja (misal: adatlampung.jpg)
 
                             if (!empty($imagePath)) {

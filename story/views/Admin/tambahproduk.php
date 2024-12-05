@@ -1,6 +1,6 @@
 <?php
 include '../../database/configdb.php';
-session_start(); // Pastikan session dimulai
+session_start(); // yang menyimpan informasi pengguna, seperti username dan role.
 
 // Ambil id_user dari session
 $id_user = $_SESSION['id_user'];  // Misalnya, id_user disimpan di session saat login
