@@ -121,7 +121,7 @@ if (!isset($_SESSION['username']) || $_SESSION['role'] != 'admin') {
     </nav> -->
     <div class="hero-section">
         <div class="col-12">
-            <img src="../../images/adatlampung.jpg" alt="Traditional Costumes" class="img-fluid rounded shadow" width="1100">
+            <img src="../../images/homeadmin.jpg" alt="Traditional Costumes" class="img-fluid rounded shadow" width="1100">
         </div>
     </div>
     <!-- Blog Section -->
