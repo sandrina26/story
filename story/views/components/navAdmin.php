@@ -21,6 +21,10 @@ $current_page = basename($_SERVER['SCRIPT_NAME']);
                 <li class="nav-item">
                     <a class="nav-link <?php echo $current_page === 'index.php' ? 'active' : ''; ?>" href="/webpro2024-1/story1/story/views/Admin/index.php">Products</a>
                 </li>
+                <!-- Menambahkan menu untuk melihat produk yang sedang disewa -->
+                <li class="nav-item">
+                    <a class="nav-link <?php echo $current_page === 'rented_products.php' ? 'active' : ''; ?>" href="/webpro2024-1/story1/story/views/Admin/rented_products.php">Rented Products</a>
+                </li>
             </ul>
             <ul class="navbar-nav ms-auto">
                 <li class="nav-item">

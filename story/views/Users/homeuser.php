@@ -1,27 +1,28 @@
 <?php
 session_start();
+include '../../database/configdb.php';
 
-if (!isset($_SESSION['username'])) {
-    header("Location: login.php?redirect=homeuser.php");
-    exit();
+// Pastikan user sudah login
+if (!isset($_SESSION['id_user'])) {
+    die("Access denied. Please log in first.");
 }
 
-// Mengambil username dari session jika ada
-$username = isset($_SESSION['username']) ? $_SESSION['username'] : ''; 
+$id_user = $_SESSION['id_user'];
 
-include '../../database/configdb.php'; // Koneksi database
-
+// Ambil produk yang tersedia
 $sql = "SELECT * FROM produk";
 $result = $conn->query($sql);
 
-if (!$result) {
-    die("Query gagal: " . $conn->error);
+// Cek produk yang sudah ada di wishlist
+$wishlist_sql = "SELECT id_produk FROM wishlist WHERE id_user = ?";
+$stmt = $conn->prepare($wishlist_sql);
+$stmt->bind_param("i", $id_user);
+$stmt->execute();
+$wishlist_result = $stmt->get_result();
+$wishlist = [];
+while ($row = $wishlist_result->fetch_assoc()) {
+    $wishlist[] = $row['id_produk']; // Menyimpan id_produk yang ada di wishlist
 }
-
-// echo '<pre>';
-// print_r($row['foto']);
-// echo '</pre>';
-
 ?>
 
 <!DOCTYPE html>
@@ -33,13 +34,13 @@ if (!$result) {
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.10.0/font/bootstrap-icons.min.css" rel="stylesheet">
     <link rel="stylesheet" href="../../CSS/stylehome.css?ver=1.0">
-    <!-- <link rel="stylesheet" href="../../CSS/style.css"> -->
 </head>
 <body>
     <!-- Nav -->
     <?php include '../components/navUser.php'; ?>
+    
     <!-- Banner Section with Carousel -->
-    <div class="container mt-5">
+    <div class="container mt-3">
         <div class="row">
             <div class="col-12">
                 <div id="bannerCarousel" class="carousel slide" data-bs-ride="carousel">
@@ -94,42 +95,82 @@ if (!$result) {
             </div>
         </div>
 
-        <div class="container mt-5">
-        <h2>Our Products</h2>
-        <div class="row">
+<!-- Products Section -->
+<div class="container">
+    <h2>Our Products</h2>
+    <div class="row">
+        <?php if ($result->num_rows > 0): ?>
             <?php while ($row = $result->fetch_assoc()): ?>
                 <div class="col-md-3 mb-4">
-                    <div class="card">
-                    <?php 
-                            // Menampilkan gambar dari path yang disimpan di database
+                    <div class="card position-relative">
+                        <!-- Menampilkan gambar produk -->
+                        <?php 
                             if (!empty($row['foto'])) {
-                                $imagePath = '../../images/' . htmlspecialchars($row['foto']); // Gabungkan dengan folder images
+                                $imagePath = '../../images/' . htmlspecialchars($row['foto']); 
                                 echo '<img src="' . $imagePath . '" class="card-img-top" alt="' . htmlspecialchars($row['nama_produk']) . '">';
                             } else {
-                                // Jika path gambar kosong, tampilkan placeholder default
                                 echo '<img src="../../images/default-placeholder.png" class="card-img-top" alt="Produk Tanpa Gambar">';
                             }
                         ?>
+
+                        <!-- Ikon Love untuk Wishlist -->
+                        <div class="position-absolute" style="top: 10px; right: 10px;">
+                            <a href="add_to_wishlist.php?id_produk=<?php echo $row['id_produk']; ?>">
+                                <i class="bi bi-heart<?php echo in_array($row['id_produk'], $wishlist) ? '-fill' : ''; ?>" 
+                                   style="font-size: 1.5rem; color: <?php echo in_array($row['id_produk'], $wishlist) ? 'red' : 'gray'; ?>;">
+                                </i>
+                            </a>
+                        </div>
+
                         <div class="card-body">
                             <h5 class="card-title"><?php echo htmlspecialchars($row['nama_produk']); ?></h5>
                             <p class="card-text">IDR <?php echo number_format($row['harga'], 0, ',', '.'); ?></p>
-                            <form method="POST" action="add_to_cart.php"> 
-                                <input type="hidden" name="id_produk" value="<?php echo $row['id_produk']; ?>">
-                                <button type="submit" class="btn btn-primary">+ Add to Cart</button>
-                            </form>
+                            <p>Stok Tersedia: <?php echo $row['stok']; ?> item</p>
+                            <button type="button" class="btn" style="background-color: #0a5b5c; color: white;" data-bs-toggle="modal" data-bs-target="#dateModal<?php echo $row['id_produk']; ?>">
+                             Add to Cart
+                            </button>
                         </div>
                     </div>
+
+                    <!-- Modal untuk memilih tanggal mulai dan tanggal akhir -->
+                    <div class="modal fade" id="dateModal<?php echo $row['id_produk']; ?>" tabindex="-1" aria-labelledby="dateModalLabel" aria-hidden="true">
+                        <div class="modal-dialog">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <h5 class="modal-title" id="dateModalLabel">Pilih Tanggal Penyewaan</h5>
+                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                </div>
+                                <div class="modal-body">
+                                    <form action="add_to_cart.php" method="POST">
+                                        <input type="hidden" name="id_produk" value="<?php echo $row['id_produk']; ?>">
+
+                                        <div class="mb-3">
+                                            <label for="tanggal_sewa<?php echo $row['id_produk']; ?>" class="form-label">Tanggal Mulai</label>
+                                            <input type="date" class="form-control" id="tanggal_sewa<?php echo $row['id_produk']; ?>" name="tanggal_sewa" required>
+                                        </div>
+
+                                        <div class="mb-3">
+                                            <label for="tanggal_kembali<?php echo $row['id_produk']; ?>" class="form-label">Tanggal Akhir</label>
+                                            <input type="date" class="form-control" id="tanggal_kembali<?php echo $row['id_produk']; ?>" name="tanggal_kembali" required>
+                                        </div>
+
+                                        <button type="submit" class="btn" style="background-color: #0a5b5c; color: white;">Add to Orders</button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
                 </div>
             <?php endwhile; ?>
-        </div>
+        <?php else: ?>
+            <p class="text-center">Tidak ada produk yang tersedia.</p>
+        <?php endif; ?>
     </div>
-    <footer class="bg-dark text-white p-2 mt-4">
-        <div class="row">
-            <div class="col text-center">
-                Created by Story @2024
-            </div>
-        </div>
-    </footer>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</div>
+
+
+<!-- Bootstrap JS (untuk modal dan navbar) -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

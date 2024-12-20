@@ -23,31 +23,31 @@ $username = isset($_SESSION['username']) ? $_SESSION['username'] : 'Guest';
             <ul class="navbar-nav me-auto mb-2 mb-lg-0">
                 <!-- Home link -->
                 <li class="nav-item">
-                    <a class="nav-link <?php echo $current_page === 'homeuser.php' ? 'active' : ''; ?>" href="/webpro2024-1/story1/story/views/Users/homeuser.php">Home</a>
+                    <a class="nav-link <?php echo $current_page === 'homeuser.php' ? 'active' : ''; ?>" href="/webpro2024-1/story1/story/views/Users/homeuser.php" style="<?php echo $current_page === 'homeuser.php' ? 'color: #0a5b5c;' : ''; ?>">Home</a>
                 </li>
 
                 <!-- Wishlist and My Order links for logged-in users -->
                 <?php if (isset($_SESSION['username'])): ?>
                     <li class="nav-item">
-                        <a class="nav-link <?php echo $current_page === 'wishlist.php' ? 'active' : ''; ?>" href="/webpro2024-1/story1/story/views/Users/wishlist.php">Wishlist</a>
+                        <a class="nav-link <?php echo $current_page === 'wishlist.php' ? 'active' : ''; ?>" href="/webpro2024-1/story1/story/views/Users/wishlist.php" style="<?php echo $current_page === 'wishlist.php' ? 'color: #0a5b5c;' : ''; ?>">Wishlist</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link <?php echo $current_page === 'myorder.php' ? 'active' : ''; ?>" href="/webpro2024-1/story1/story/views/Users/myorder.php">My Order</a>
+                        <a class="nav-link <?php echo $current_page === 'myorder.php' ? 'active' : ''; ?>" href="/webpro2024-1/story1/story/views/Users/myorder.php" style="<?php echo $current_page === 'myorder.php' ? 'color: #0a5b5c;' : ''; ?>">My Order</a>
                     </li>
                 <?php else: ?>
-                    <li class="nav-item"><a class="nav-link" href="login.php?redirect=wishlist.php">Wishlist</a></li>
-                    <li class="nav-item"><a class="nav-link" href="login.php?redirect=myorder.php">My Order</a></li>
+                    <li class="nav-item"><a class="nav-link" href="login.php?redirect=wishlist.php" style="<?php echo $current_page === 'wishlist.php' ? 'color: #0a5b5c;' : ''; ?>">Wishlist</a></li>
+                    <li class="nav-item"><a class="nav-link" href="login.php?redirect=myorder.php" style="<?php echo $current_page === 'myorder.php' ? 'color: #0a5b5c;' : ''; ?>">My Order</a></li>
                 <?php endif; ?>
 
                 <!-- Sale, Style, Shop links -->
                 <li class="nav-item">
-                    <a class="nav-link <?php echo $current_page === 'sale.php' ? 'active' : ''; ?>" href="sale.php">Sale</a>
+                    <a class="nav-link <?php echo $current_page === 'sale.php' ? 'active' : ''; ?>" href="sale.php" style="<?php echo $current_page === 'sale.php' ? 'color: #0a5b5c;' : ''; ?>">Sale</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link <?php echo $current_page === 'style.php' ? 'active' : ''; ?>" href="style.php">Style</a>
+                    <a class="nav-link <?php echo $current_page === 'style.php' ? 'active' : ''; ?>" href="style.php" style="<?php echo $current_page === 'style.php' ? 'color: #0a5b5c;' : ''; ?>">Style</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link <?php echo $current_page === 'shop.php' ? 'active' : ''; ?>" href="shop.php">Shop</a>
+                    <a class="nav-link <?php echo $current_page === 'shop.php' ? 'active' : ''; ?>" href="shop.php" style="<?php echo $current_page === 'shop.php' ? 'color: #0a5b5c;' : ''; ?>">Shop</a>
                 </li>
 
             </ul>
